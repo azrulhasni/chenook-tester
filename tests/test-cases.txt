@@ -1,0 +1,30 @@
+Upload and search
+=================
+1) Login
+2) Create (Root folder) folder - assign goofy.goof for Create and Update 
+3) Create sub-folder - assign mickey.mouse for Create and Update
+4) Assert mickey.mouse is one of the reader in Root Folder
+5) Upload Zed.pdf
+6) Search (everywhere) for 'zed'
+7) Open containing folder
+8) Assert Zed.pdf in containing folder
+9) Open (from search) the file (click on 'View document')
+10) Assert the Document tab namee has 'Zed'pdf'
+11) Done 
+
+Activate De-activate
+====================
+1) Login
+2) Create (Root folder) folder - assign goofy.goof for Create and Update 
+3) Create sub-folder - assign mickey.mouse for Create and Update
+4) Assert mickey.mouse is one of the reader in Root Folder
+5) Upload Zed.pdf
+6) De-activate root folder
+7) Assert 
+
+6) Search (everywhere) for 'zed'
+7) Open containing folder
+8) Assert Zed.pdf in containing folder
+9) Open (from search) the file (click on 'View document')
+10) Assert the Document tab namee has 'Zed'pdf'
+11) Done 
