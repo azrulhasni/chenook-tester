@@ -25,60 +25,134 @@ export enum User {
 
 
 test('happy-path', async ({ page }) => {
-  test.setTimeout(120000);
+  test.setTimeout(200000);
 
 
   // Load "http://localhost:18080/"
   await page.goto('http://localhost:18080/');
 
   await login(page, User.yuser111, 'abc123');
-  
+
   const applicantCompanyName = "MyBiz";
 
-  await createApplicationAndApplicants(page, applicantCompanyName);
+  await openApplication(page);
 
-/*
-
-
-  //Upload
-  await upload(page, childFolder, 'tests/sample/old/Zed.pdf');
-
-  // Click on <vaadin-button> "Clear selection"
-  await page.click('#btnClearSelection');
-
-  await doSearch(page, true, childFolder, 'zed');
-
-  // Click on <vaadin-button> ">>"
-  await page.click('#btnFinalStage-PAGE_NAV');
-
-  // Click on <vaadin-button> "Open containing folder"
-  await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
-
-  //assert Zed.pdf is in the containing folder
-  await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('Zed.pdf');
-
-  // Click on <vaadin-button> "View document"
-  await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');
+  const workItemId = await createApplicationAndApplicants(page, applicantCompanyName);
 
   await logout(page);
 
-  await login(page, User.user2, 'abc123');
+  await login(page, User.yuser110, 'abc123');
 
-  await upload(page, childFolder, 'tests/sample/msdocs/file-sample_1MB.doc');
+  await doApproval(page, workItemId, true);
 
-  await doSearch(page, true, childFolder, 'vivomus');
+  await logout(page);
 
-  // Click on <vaadin-button> ">>"
-  await page.click('#btnFinalStage-PAGE_NAV');
+  await login(page, User.yuser100, 'abc123');
 
-  // Click on <vaadin-button> "Open containing folder"
-  await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
+  await doApproval(page, workItemId, true);
 
-  //assert Zed.pdf is in the containing folder
-  await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('file-sample_1MB.doc.pdf');
+  await logout(page);
 
-  // Click on <vaadin-button> "View document"
-  await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');*/
+  await login(page, User.yuser112, 'abc123');
+
+  await bookWorkAndSubmit(page, workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser211, 'abc123');
+
+  await bookWorkAndSubmit(page, workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser210, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser200, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser213, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser311, 'abc123');
+
+  await bookWorkAndSubmit(page, workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser312, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser313, 'abc123');
+
+  await doApproval(page, workItemId, false);
+
+  await logout(page);
+
+  await login(page, User.yuser310, 'abc123');
+
+  await doApproval(page, workItemId, false);
+
+  await logout(page);
+
+  //await approval(page,true)
+
+  //approvalNeeded
+
+  /*
+  
+  
+    //Upload
+    await upload(page, childFolder, 'tests/sample/old/Zed.pdf');
+  
+    // Click on <vaadin-button> "Clear selection"
+    await page.click('#btnClearSelection');
+  
+    await doSearch(page, true, childFolder, 'zed');
+  
+    // Click on <vaadin-button> ">>"
+    await page.click('#btnFinalStage-PAGE_NAV');
+  
+    // Click on <vaadin-button> "Open containing folder"
+    await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
+  
+    //assert Zed.pdf is in the containing folder
+    await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('Zed.pdf');
+  
+    // Click on <vaadin-button> "View document"
+    await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');
+  
+    await logout(page);
+  
+    await login(page, User.user2, 'abc123');
+  
+    await upload(page, childFolder, 'tests/sample/msdocs/file-sample_1MB.doc');
+  
+    await doSearch(page, true, childFolder, 'vivomus');
+  
+    // Click on <vaadin-button> ">>"
+    await page.click('#btnFinalStage-PAGE_NAV');
+  
+    // Click on <vaadin-button> "Open containing folder"
+    await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
+  
+    //assert Zed.pdf is in the containing folder
+    await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('file-sample_1MB.doc.pdf');
+  
+    // Click on <vaadin-button> "View document"
+    await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');*/
 
   //await logout(page);
 });
@@ -102,7 +176,7 @@ async function doSearch(page, equalsChildFolder, childFolder, keyword) {
 }
 
 async function logout(page) {
-  await page.click('vaadin-drawer-toggle[aria-label="Menu toggle"]');
+  //await page.locator("//vaadin-drawer-toggle[@aria-label='Menu toggle']").click()
 
   await page.click('//vaadin-menu-bar-item[@aria-selected="false"]//div');
 
@@ -136,45 +210,64 @@ async function login(page, username, password) {
   }
 }
 
-async function createApplicationAndApplicants(page, applicantCompanyName){
+async function openApplication(page) {
+  await page.locator("//vaadin-drawer-toggle[@aria-label='Menu toggle']").click()
+  await page.locator("vaadin-side-nav-item:nth-of-type(2)").click()
+}
 
-      await page.locator("vaadin-drawer-toggle").click()
-      await page.locator("vaadin-side-nav-item:nth-of-type(2)").click()
-      await page.locator("#new_S0\\.MY").click()
-      await page.locator("//vaadin-text-field[@id='name']//input[1]").type(applicantCompanyName);
-      await page.locator("//vaadin-text-area[@id='address']//textarea[1]").type("JTREND, MSC Central Incubatoor");
-      await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").type("63000");
-      await selectComboBox(page,"state","Selangor");
-      await page.locator("//vaadin-text-field[@id='ssmRegistrationNumber']//input[1]").type("MY12345678");
-      await page.locator("//vaadin-text-field[@id='financingRequested.amount']//input[1]").type("20,000");
-      await page.locator("//vaadin-text-area[@id='reasonForFinancing']//textarea[1]").type("Equipment purchase");
-      
-      await page.locator("//vaadin-button[@id='btnAddApplicant']").click()
-      await page.locator("//vaadin-text-field[@id='fullName']//input[1]").type("Donald Duck");
-      await page.locator("//vaadin-text-field[@id='icNumber']//input[1]").type("780101010101");
-      await page.locator("//vaadin-text-field[@id='phoneNumber']//input[1]").type("0123456789");
-      await page.locator("//vaadin-text-field[@id='email']//input[1]").type("donald.duck@mybiz.com");
-      await selectComboBox(page,"type","DIRECTOR");
-      await page.locator("input[type='file'][accept='.png']").setInputFiles("tests/sample/sign/signDonald.png");
-      await page.locator("#type").click()
-      await page.locator("//vaadin-button[@id='btnSave']").click()
+async function createApplicationAndApplicants(page, applicantCompanyName) {
 
-      await page.locator("//vaadin-button[@id='btnAddApplicant']").click()
-      await page.locator("//vaadin-text-field[@id='fullName']//input[1]").type("DaisyDuck");
-      await page.locator("//vaadin-text-field[@id='icNumber']//input[1]").type("780202020202");
-      await page.locator("//vaadin-text-field[@id='phoneNumber']//input[1]").type("01298765432");
-      await page.locator("//vaadin-text-field[@id='email']//input[1]").type("daisy.duck@mybiz.com");
-      await selectComboBox(page,"type","SHAREHOLDER");
-      await page.locator("input[type='file'][accept='.png']").setInputFiles("tests/sample/sign/signDaisy.png");
-      await page.locator("#type").click()
-      await page.locator("//vaadin-button[@id='btnSave']").click();
-      await page.locator("#fileInput").setInputFiles("tests/sample/old/Zed.pdf");
 
-      await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
-    }
-  
-async function selectComboBox(page, id, valueToBeSelected){
-  await page.locator("#"+id).click();
+  await page.locator("#new_S0\\.MY").click()
+  const id = page.locator("//vaadin-text-field[@id='id']/input[1]").inputValue();
+  await page.locator("//vaadin-text-field[@id='name']//input[1]").type(applicantCompanyName);
+  await page.locator("//vaadin-text-area[@id='address']//textarea[1]").type("JTREND, MSC Central Incubatoor");
+  await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").type("63000");
+  await selectComboBox(page, "state", "Selangor");
+  await page.locator("//vaadin-text-field[@id='ssmRegistrationNumber']//input[1]").type("MY12345678");
+  await page.locator("//vaadin-text-field[@id='financingRequested.amount']//input[1]").type("20,000");
+  await page.locator("//vaadin-text-area[@id='reasonForFinancing']//textarea[1]").type("Equipment purchase");
+
+  await page.locator("//vaadin-button[@id='btnAddApplicant']").click()
+  await page.locator("//vaadin-text-field[@id='fullName']//input[1]").type("Donald Duck");
+  await page.locator("//vaadin-text-field[@id='icNumber']//input[1]").type("780101010101");
+  await page.locator("//vaadin-text-field[@id='phoneNumber']//input[1]").type("0123456789");
+  await page.locator("//vaadin-text-field[@id='email']//input[1]").type("donald.duck@mybiz.com");
+  await selectComboBox(page, "type", "DIRECTOR");
+  await page.locator("input[type='file'][accept='.png']").setInputFiles("tests/sample/sign/signDonald.png");
+  await page.locator("#type").click()
+  await page.locator("//vaadin-button[@id='btnSave']").click()
+
+  await page.locator("//vaadin-button[@id='btnAddApplicant']").click()
+  await page.locator("//vaadin-text-field[@id='fullName']//input[1]").type("DaisyDuck");
+  await page.locator("//vaadin-text-field[@id='icNumber']//input[1]").type("780202020202");
+  await page.locator("//vaadin-text-field[@id='phoneNumber']//input[1]").type("01298765432");
+  await page.locator("//vaadin-text-field[@id='email']//input[1]").type("daisy.duck@mybiz.com");
+  await selectComboBox(page, "type", "SHAREHOLDER");
+  await page.locator("input[type='file'][accept='.png']").setInputFiles("tests/sample/sign/signDaisy.png");
+  await page.locator("#type").click()
+  await page.locator("//vaadin-button[@id='btnSave']").click();
+  await page.locator("input[type='file'][accept*='doc']").setInputFiles("tests/sample/old/Zed.pdf");
+
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+  return id;
+}
+
+async function doApproval(page, workItemId, approved){
+  await openApplication(page);
+  await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+  await selectComboBox(page,"approvalNeeded", approved?"Approve":"Reject")
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+}
+
+async function bookWorkAndSubmit(page, workItemId){
+  await openApplication(page);
+  await page.locator("//vaadin-button[@id='btnBook"+workItemId+"']").click();
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+}
+
+async function selectComboBox(page, componentTestId, valueToBeSelected) {
+  await page.locator("#" + componentTestId).click();
   await page.keyboard.type(valueToBeSelected);
   await page.keyboard.press('Enter');
 }
@@ -201,7 +294,7 @@ async function createFolderAndSubFolder2(page, rootFolder, rootFolderUsers, root
   // Fill "folder 240308 1" on <input> #input-vaadin-text-field-22
   await page.fill('vaadin-dialog-overlay[aria-label="Create folder"] input[type="text"]', rootFolder);
 
-  
+
   // Click on <vaadin-button> "Create"
   await page.click('div > vaadin-button:nth-child(1)');
 
@@ -217,7 +310,7 @@ async function createFolderAndSubFolder2(page, rootFolder, rootFolderUsers, root
   // Fill "folder 240308 1 1" on Create folfder
   await page.fill('//vaadin-dialog-overlay[@aria-label="Create folder"]//input[@type="text"]', childFolder);
 
-  
+
 
   // Click on <vaadin-button> "Create"
   await page.click('div > vaadin-button:nth-child(1)');
