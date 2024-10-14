@@ -22,11 +22,8 @@ export enum User {
 
 
 
-
-
 test('happy-path', async ({ page }) => {
   test.setTimeout(200000);
-
 
   // Load "http://localhost:18080/"
   await page.goto('http://localhost:18080/');
@@ -55,7 +52,11 @@ test('happy-path', async ({ page }) => {
 
   await login(page, User.yuser112, 'abc123');
 
-  await bookWorkAndSubmit(page, workItemId);
+  await book(page, workItemId);
+
+  await fillInSiteVisitReport(page);
+
+  await submit(page);
 
   await logout(page);
 
@@ -103,59 +104,100 @@ test('happy-path', async ({ page }) => {
 
   await login(page, User.yuser310, 'abc123');
 
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+});
+
+test('exception-path', async ({ page }) => {
+  test.setTimeout(200000);
+
+  // Load "http://localhost:18080/"
+  await page.goto('http://localhost:18080/');
+
+  await login(page, User.yuser111, 'abc123');
+
+  const applicantCompanyName = "MyBiz";
+
+  await openApplication(page);
+
+  const workItemId = await createApplicationAndApplicants(page, applicantCompanyName);
+
+  await logout(page);
+
+  await login(page, User.yuser110, 'abc123');
+
   await doApproval(page, workItemId, false);
 
   await logout(page);
 
-  //await approval(page,true)
+  await login(page, User.yuser100, 'abc123');
 
-  //approvalNeeded
+  await doApproval(page, workItemId, true);
 
-  /*
-  
-  
-    //Upload
-    await upload(page, childFolder, 'tests/sample/old/Zed.pdf');
-  
-    // Click on <vaadin-button> "Clear selection"
-    await page.click('#btnClearSelection');
-  
-    await doSearch(page, true, childFolder, 'zed');
-  
-    // Click on <vaadin-button> ">>"
-    await page.click('#btnFinalStage-PAGE_NAV');
-  
-    // Click on <vaadin-button> "Open containing folder"
-    await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
-  
-    //assert Zed.pdf is in the containing folder
-    await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('Zed.pdf');
-  
-    // Click on <vaadin-button> "View document"
-    await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');
-  
-    await logout(page);
-  
-    await login(page, User.user2, 'abc123');
-  
-    await upload(page, childFolder, 'tests/sample/msdocs/file-sample_1MB.doc');
-  
-    await doSearch(page, true, childFolder, 'vivomus');
-  
-    // Click on <vaadin-button> ">>"
-    await page.click('#btnFinalStage-PAGE_NAV');
-  
-    // Click on <vaadin-button> "Open containing folder"
-    await page.click('.card:nth-child(1) vaadin-button:nth-child(2)');
-  
-    //assert Zed.pdf is in the containing folder
-    await expect(page.locator('//vaadin-grid-cell-content[17]')).toContainText('file-sample_1MB.doc.pdf');
-  
-    // Click on <vaadin-button> "View document"
-    await page.click('.card:nth-child(1) vaadin-button:nth-child(1)');*/
+  await logout(page);
 
-  //await logout(page);
+  await login(page, User.yuser112, 'abc123');
+
+  await book(page, workItemId);
+
+  await fillInSiteVisitReport(page);
+
+  await submit(page);
+
+  await logout(page);
+
+  await login(page, User.yuser211, 'abc123');
+
+  await bookWorkAndSubmit(page, workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser210, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser200, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser213, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser311, 'abc123');
+
+  await bookWorkAndSubmit(page, workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser312, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
+  await login(page, User.yuser313, 'abc123');
+
+  await doApproval(page, workItemId, false);
+
+  await logout(page);
+
+  await login(page, User.yuser310, 'abc123');
+
+  await doApproval(page, workItemId, true);
+
+  await logout(page);
+
 });
+
 
 
 async function doSearch(page, equalsChildFolder, childFolder, keyword) {
@@ -215,6 +257,10 @@ async function openApplication(page) {
   await page.locator("vaadin-side-nav-item:nth-of-type(2)").click()
 }
 
+async function fillInSiteVisitReport(page){
+  await page.locator("//vaadin-text-area[@id='siteVisitReport']//textarea[1]").type("Site was adequate and in good condition.");
+}
+
 async function createApplicationAndApplicants(page, applicantCompanyName) {
 
 
@@ -262,7 +308,19 @@ async function doApproval(page, workItemId, approved){
 
 async function bookWorkAndSubmit(page, workItemId){
   await openApplication(page);
+  await page.locator("//vaadin-tab[@id='tabWorkList']").click();
   await page.locator("//vaadin-button[@id='btnBook"+workItemId+"']").click();
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+}
+
+async function book(page, workItemId){
+  await openApplication(page);
+  await page.locator("//vaadin-tab[@id='tabWorkList']").click();
+  await page.locator("//vaadin-button[@id='btnBook"+workItemId+"']").click();
+  
+}
+
+async function submit(page){
   await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
 }
 
@@ -272,18 +330,6 @@ async function selectComboBox(page, componentTestId, valueToBeSelected) {
   await page.keyboard.press('Enter');
 }
 
-/*
-async function createFolderAndSubFolder(page, rootFolder, childFolder) {
-  await createFolderAndSubFolder2(
-    page,
-    rootFolder,
-    [UserFirstName.user3, UserFirstName.user4],
-    [FolderRight.CREATE_AND_UPDATE, FolderRight.READ],
-    childFolder,
-    [UserFirstName.user2],
-    [FolderRight.CREATE_AND_UPDATE]);
-}
-*/
 async function createFolderAndSubFolder2(page, rootFolder, rootFolderUsers, rootFolderRights, childFolder, childFolderUsers, childFolderRights) {
   // Click on <vaadin-button> "Create folder"
   await page.click('#btnCreateFolder');
@@ -324,65 +370,3 @@ async function createFolderAndSubFolder2(page, rootFolder, rootFolderUsers, root
   //Clear selection after folder create
   await page.click('#btnClearSelection');
 }
-
-/*
-async function assignUsers(page, users: string[], rights: FolderRight[]) {
-  //await page.click('vaadin-item:nth-child(2)');
-
-  var i = 0;
-  for (const user of users) {
-    await page.type('input[placeholder="Search user"]', user);
-    await page.click('(//vaadin-item[@role="option"])[1]');
-
-    // Click on <vaadin-combo-box> #comboBoxRights
-    await page.click('#comboBoxRights');
-
-    // Click on <vaadin-combo-box-item> "Create and update"
-    await page.fill('vaadin-horizontal-layout[theme="spacing"] vaadin-vertical-layout[theme="padding spacing"] input[role="combobox"]', '');
-    await page.click('vaadin-horizontal-layout[theme="spacing"] vaadin-vertical-layout[theme="padding spacing"] input[role="combobox"]');
-    await page.keyboard.type(rights[i].toString());
-    await page.keyboard.press('Enter');
-    //await page.click('#vaadin-combo-box-item-0');
-    // Click on <vaadin-button> "Transfer >>"
-    await page.click('#btnTransfer');
-    await page.fill('input[placeholder="Search user"]', '');
-    i++;
-  };
-
-
-
-
-}
-
-async function upload(page, folder, file) {
-  // Click on <vaadin-button> "Upload"
-  await page.click('#btnUpload');
-
-  // Click on <input> #input-vaadin-text-field-77
-  await page.click('//vaadin-dialog-overlay[@aria-label="Upload"]//input[@role="combobox"]');
-
-  //Choose an upload folder
-  await page.fill('//vaadin-dialog-overlay[@aria-label="Upload"]//input[@role="combobox"]', '');
-  await page.keyboard.type(folder + '()');
-  await page.keyboard.press('Enter');
-
-
-  // Fill "#zed #programming"   
-  await page.locator('kelichap-autocomplete[colspan="2"]').click()
-  await page.locator('kelichap-autocomplete[colspan="2"]').type("#zed #programming");
-
-  //await page.fill('//vaadin-dialog-overlay[@aria-label="Upload"]//input[@type="text"]', 'aaa bbb');
-
-
-
-  //upload
-  await page.locator('#fileInput').setInputFiles(file);
-
-  await page.waitForTimeout(3000);
-
-  // Click on <vaadin-button> "Save"
-  await page.click('div > vaadin-button:nth-child(1)');
-
-}
-*/
-
