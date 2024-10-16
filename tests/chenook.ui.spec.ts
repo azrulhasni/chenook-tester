@@ -302,8 +302,16 @@ async function createApplicationAndApplicants(page, applicantCompanyName) {
 async function doApproval(page, workItemId, approved){
   await openApplication(page);
   await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+  await page.locator("//vaadin-button[@id='btnApproval']").click();
   await selectComboBox(page,"approvalNeeded", approved?"Approve":"Reject")
+  if (approved==false){
+    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type("Rejected because addrress is not correct")
+  }else{
+    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type("OK")
+  }
+  await page.locator("//vaadin-button[@id='btnClose']").click()
   await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+  
 }
 
 async function bookWorkAndSubmit(page, workItemId){
