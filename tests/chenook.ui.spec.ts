@@ -269,7 +269,9 @@ async function createApplicationAndApplicants(page, applicantCompanyName) {
   await page.locator("//vaadin-text-field[@id='name']//input[1]").type(applicantCompanyName);
   await page.locator("//vaadin-text-area[@id='address']//textarea[1]").type("JTREND, MSC Central Incubatoor");
   await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").type("63000");
-  await selectComboBox(page, "state", "Selangor");
+  //await selectComboBox(page, "state", "Selangor");
+  await selectReference(page,"location","gomb*");
+
   await page.locator("//vaadin-text-field[@id='ssmRegistrationNumber']//input[1]").type("MY12345678");
   await page.locator("//vaadin-text-field[@id='financingRequested.amount']//input[1]").type("20,000");
   await page.locator("//vaadin-text-area[@id='reasonForFinancing']//textarea[1]").type("Equipment purchase");
@@ -336,6 +338,14 @@ async function selectComboBox(page, componentTestId, valueToBeSelected) {
   await page.locator("#" + componentTestId).click();
   await page.keyboard.type(valueToBeSelected);
   await page.keyboard.press('Enter');
+}
+
+async function selectReference(page, fieldName, valueToBeSelected){
+  await page.locator("//vaadin-button[@id='btnSelectDialog-"+fieldName+"']").click();
+  await page.locator("//vaadin-text-field[@id='searchField-"+fieldName+"']/input").type(valueToBeSelected);
+  await page.locator("//vaadin-button[@id='searchBtn-"+fieldName+"']").click();
+  await page.locator("//vaadin-grid-cell-content[16]//vaadin-checkbox[1]//input[1]").click();
+  await page.locator("//vaadin-button[@id='btnSelect-"+fieldName+"']").click();
 }
 
 async function createFolderAndSubFolder2(page, rootFolder, rootFolderUsers, rootFolderRights, childFolder, childFolderUsers, childFolderRights) {
