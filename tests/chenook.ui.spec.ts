@@ -40,13 +40,13 @@ test('happy-path', async ({ page }) => {
 
   await login(page, User.yuser110, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
   await login(page, User.yuser100, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
@@ -68,21 +68,22 @@ test('happy-path', async ({ page }) => {
 
   await login(page, User.yuser210, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true,  "OK");
 
   await logout(page);
 
   await login(page, User.yuser200, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
-  await login(page, User.yuser213, 'abc123');
+  await login(page, User.yuser212, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
+
 
   await login(page, User.yuser311, 'abc123');
 
@@ -92,26 +93,34 @@ test('happy-path', async ({ page }) => {
 
   await login(page, User.yuser312, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
   await login(page, User.yuser313, 'abc123');
 
-  await doApproval(page, workItemId, false);
+  await doApproval(page, workItemId, false, "Tie breaker");
 
   await logout(page);
 
   await login(page, User.yuser310, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
+
+  await logout(page);
+
+  await login(page, User.yuser111, 'abc123');
+
+  await book(page, workItemId);
+
+  await informCustomer(page, workItemId);
 
   await logout(page);
 
 });
 
 test('exception-path', async ({ page }) => {
-  test.setTimeout(200000);
+  test.setTimeout(600000);
 
   // Load "http://localhost:18080/"
   await page.goto('http://localhost:18080/');
@@ -128,13 +137,43 @@ test('exception-path', async ({ page }) => {
 
   await login(page, User.yuser110, 'abc123');
 
-  await doApproval(page, workItemId, false);
+  await doApproval(page, workItemId, false, "Rejected because addrress is not correct");
+
+  await logout(page);
+
+  await login(page, User.yuser111, 'abc123');
+
+  await correctAddress(page,workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser110, 'abc123');
+
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
   await login(page, User.yuser100, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, false, "Rejected because addrress is not correct");
+
+  await logout(page);
+
+  await login(page, User.yuser111, 'abc123');
+
+  await correctAddress2(page,workItemId);
+
+  await logout(page);
+
+  await login(page, User.yuser110, 'abc123');
+
+  await doApproval(page, workItemId, true, "OK");
+
+  await logout(page);
+
+  await login(page, User.yuser100, 'abc123');
+
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
@@ -156,43 +195,33 @@ test('exception-path', async ({ page }) => {
 
   await login(page, User.yuser210, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
   await login(page, User.yuser200, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, true, "OK");
 
   await logout(page);
 
   await login(page, User.yuser213, 'abc123');
 
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, false, "Bad credit score");
 
   await logout(page);
 
-  await login(page, User.yuser311, 'abc123');
+  await login(page, User.yuser212, 'abc123');
 
-  await bookWorkAndSubmit(page, workItemId);
-
-  await logout(page);
-
-  await login(page, User.yuser312, 'abc123');
-
-  await doApproval(page, workItemId, true);
+  await doApproval(page, workItemId, false, "Bad credit score");
 
   await logout(page);
 
-  await login(page, User.yuser313, 'abc123');
+  await login(page, User.yuser111, 'abc123');
 
-  await doApproval(page, workItemId, false);
+  await book(page, workItemId);
 
-  await logout(page);
-
-  await login(page, User.yuser310, 'abc123');
-
-  await doApproval(page, workItemId, true);
+  await informCustomer(page, workItemId);
 
   await logout(page);
 
@@ -254,11 +283,49 @@ async function login(page, username, password) {
 
 async function openApplication(page) {
   await page.locator("//vaadin-drawer-toggle[@aria-label='Menu toggle']").click()
-  await page.locator("vaadin-side-nav-item:nth-of-type(2)").click()
+  await page.locator("//vaadin-side-nav-item[@id='sme-financing-link']").click()
 }
 
 async function fillInSiteVisitReport(page){
   await page.locator("//vaadin-text-area[@id='siteVisitReport']//textarea[1]").type("Site was adequate and in good condition.");
+}
+
+async function informCustomer(page, workItemId){
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
+}
+
+async function correctAddress(page, workItemId){
+  await openApplication(page);
+  await page.locator("//vaadin-text-field[@id='searchField-mywork']//input[1]").type(workItemId);
+  await page.locator("//vaadin-button[@id='searchBtn-mywork']").click();
+  await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+  
+  await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").focus();
+  await page.keyboard.press("Meta+A");
+  await page.keyboard.press("Backspace");
+  await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").type("63100");
+  await page.locator("//vaadin-text-area[@id='address']//textarea[1]").focus();
+  await page.keyboard.press("Meta+A");
+  await page.keyboard.press("Backspace");
+  await page.locator("//vaadin-text-area[@id='address']//textarea[1]").type("JTRND, MSC Central Incubator");
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click();
+}
+
+async function correctAddress2(page, workItemId){
+  await openApplication(page);
+  await page.locator("//vaadin-text-field[@id='searchField-mywork']//input[1]").type(workItemId);
+  await page.locator("//vaadin-button[@id='searchBtn-mywork']").click();
+  await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+  
+  await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").focus();
+  await page.keyboard.press("Meta+A");
+  await page.keyboard.press("Backspace");
+  await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").type("63200");
+  await page.locator("//vaadin-text-area[@id='address']//textarea[1]").focus();
+  await page.keyboard.press("Meta+A");
+  await page.keyboard.press("Backspace");
+  await page.locator("//vaadin-text-area[@id='address']//textarea[1]").type("JTRND, MSC Central Incubator 2");
+  await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
 }
 
 async function createApplicationAndApplicants(page, applicantCompanyName) {
@@ -295,21 +362,21 @@ async function createApplicationAndApplicants(page, applicantCompanyName) {
   await page.locator("input[type='file'][accept='.png']").setInputFiles("tests/sample/sign/signDaisy.png");
   await page.locator("#type").click()
   await page.locator("//vaadin-button[@id='btnSave']").click();
-  await page.locator("input[type='file'][accept*='doc']").setInputFiles("tests/sample/old/Zed.pdf");
+  //await page.locator("input[type='file'][accept*='doc']").setInputFiles("tests/sample/old/Zed.pdf");
 
   await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
   return id;
 }
 
-async function doApproval(page, workItemId, approved){
+async function doApproval(page, workItemId, approved, message){
   await openApplication(page);
   await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
   await page.locator("//vaadin-button[@id='btnApproval']").click();
   await selectComboBox(page,"approvalNeeded", approved?"Approve":"Reject")
   if (approved==false){
-    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type("Rejected because addrress is not correct")
+    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type(message)
   }else{
-    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type("OK")
+    await page.locator("//vaadin-text-area[@id='approvalNote']//textarea[1]").type(message)
   }
   await page.locator("//vaadin-button[@id='btnClose']").click()
   await page.locator("//vaadin-button[@id='btnSaveAndSubmitApp']").click()
@@ -344,6 +411,7 @@ async function selectReference(page, fieldName, valueToBeSelected){
   await page.locator("//vaadin-button[@id='btnSelectDialog-"+fieldName+"']").click();
   await page.locator("//vaadin-text-field[@id='searchField-"+fieldName+"']/input").type(valueToBeSelected);
   await page.locator("//vaadin-button[@id='searchBtn-"+fieldName+"']").click();
+  await page.waitForTimeout(1000); //wait for a second
   await page.locator("//vaadin-grid-cell-content[16]//vaadin-checkbox[1]//input[1]").click();
   await page.locator("//vaadin-button[@id='btnSelect-"+fieldName+"']").click();
 }
