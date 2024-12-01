@@ -119,7 +119,7 @@ test('happy-path', async ({ page }) => {
 
 });
 
-test('exception-path', async ({ page }) => {
+test('exception-path-until-underwriting', async ({ page }) => {
   test.setTimeout(600000);
 
   // Load "http://localhost:18080/"
@@ -229,6 +229,8 @@ test('exception-path', async ({ page }) => {
 
 
 
+
+
 async function doSearch(page, equalsChildFolder, childFolder, keyword) {
   // Click on <input> #input-vaadin-text-field-12
   await page.click('//input[@type="text"]');
@@ -296,9 +298,16 @@ async function informCustomer(page, workItemId){
 
 async function correctAddress(page, workItemId){
   await openApplication(page);
+
   await page.locator("//vaadin-text-field[@id='searchField-mywork']//input[1]").type(workItemId);
   await page.locator("//vaadin-button[@id='searchBtn-mywork']").click();
   await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+
+  await page.locator("//vaadin-button[@id='btnWorkflowInfo']").click();
+  await page.locator("(//span[@id='spanApproval'])[1]").click();
+  await page.locator("//vaadin-button[@id='btnClose']").click();
+  await page.locator("//vaadin-button[@id='btnDone']").click();
+
   
   await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").focus();
   await page.keyboard.press("Meta+A");
@@ -313,9 +322,16 @@ async function correctAddress(page, workItemId){
 
 async function correctAddress2(page, workItemId){
   await openApplication(page);
+
+
   await page.locator("//vaadin-text-field[@id='searchField-mywork']//input[1]").type(workItemId);
   await page.locator("//vaadin-button[@id='searchBtn-mywork']").click();
   await page.locator("//vaadin-button[@id='btnMyWork"+workItemId+"']").click();
+
+  await page.locator("//vaadin-button[@id='btnWorkflowInfo']").click();
+  await page.locator("(//span[@id='spanApproval'])[1]").click();
+  await page.locator("//vaadin-button[@id='btnClose']").click();
+  await page.locator("//vaadin-button[@id='btnDone']").click();
   
   await page.locator("//vaadin-text-field[@id='postalCode']//input[1]").focus();
   await page.keyboard.press("Meta+A");
