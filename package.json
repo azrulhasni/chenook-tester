@@ -11,7 +11,7 @@
   "author": "azrul",
   "contributors": [],
   "devDependencies": {
-    "@playwright/test": "^1.42.1",
+    "@playwright/test": "^1.49.0",
     "@types/node": "^20.11.25"
   },
   "scripts": {}
