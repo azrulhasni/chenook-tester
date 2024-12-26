@@ -229,8 +229,15 @@ test('exception-path-until-underwriting', async ({ page }) => {
 
 });
 
-test('admin-create-happy-path', async ({ page }) => {
+test('admin-happy-path', async ({ page }) => {
   test.setTimeout(600000);
+
+  var seconds = Math.round((new Date()).getTime() / 1000);
+
+  var district1='AAA_'+seconds;
+  var district2='BBB_'+seconds;
+  var state1= 'CCC_'+seconds;
+  var state2=  'DDD_'+seconds;
 
   // Load "http://localhost:18080/"
   await page.goto('http://localhost:18080/');
@@ -239,16 +246,43 @@ test('admin-create-happy-path', async ({ page }) => {
 
   await openLocation(page);
 
-  const workItemId = await createLocations(page,'AAA', 'BBB', 'Malaysia', 'CCC', 'DDD', 'Malaysia');
+  const createWorkItem = await createLocations(page,district1,state1, 'Malaysia', district2, state2, 'Malaysia');
 
   await logout(page);
 
   await login(page, User.ychecker, 'abc123');
 
-  await doApprovalForLocation(page, workItemId, true, "OK");
+  await doApprovalForLocation(page, createWorkItem, true, "OK");
 
   await logout(page);
 
+  await login(page, User.yadmin, 'abc123');
+
+  await openLocation(page);
+
+  const  updateWorkItem = await updateLocations(page,district1,state1, 'Malaysia', district2, state2, 'Malaysia');
+
+  await logout(page);
+
+  await login(page, User.ychecker, 'abc123');
+
+  await doApprovalForLocation(page, updateWorkItem, true, "OK");
+
+  await logout(page);
+
+  await login(page, User.yadmin, 'abc123');
+
+  await openLocation(page);
+
+  const  retireWorkItem = await retireLocations(page,district1,district2);
+
+  await logout(page);
+
+  await login(page, User.ychecker, 'abc123');
+
+  await doApprovalForLocation(page, retireWorkItem, true, "OK");
+
+  await logout(page);
   
 });
 
@@ -440,6 +474,76 @@ async function createLocations(page, district1, state1, country1, district2, sta
   
   return id;
 }
+
+async function updateLocations(page, district1, state1, country1, district2, state2, country2) {
+    await page.locator("//vaadin-menu-bar-item[@id='new_S0.REF.UPDATE.MAKER']").click()
+    const id = page.locator("//vaadin-text-field[@id='id']//input[1]").inputValue();
+  
+    await page.locator("//vaadin-text-field[@id='searchField-ALL']/input[1]").type(district1);
+
+    await page.keyboard.press('Enter');
+
+    await page.locator("(//vaadin-menu-bar-item[@aria-selected='false'][normalize-space()='>'])[1]").click();
+
+    await page.locator("//vaadin-menu-bar-item[@role='menuitem']").click();
+
+    await page.locator("//vaadin-text-field[@id='district']//input[1]").fill('');
+    await page.locator("//vaadin-text-field[@id='state']//input[1]").fill('');
+    await page.locator("//vaadin-text-field[@id='country']//input[1]").fill('');
+  
+    await page.locator("//vaadin-text-field[@id='district']//input[1]").type("#"+district1);
+    await page.locator("//vaadin-text-field[@id='state']//input[1]").type("#"+state1);
+    await page.locator("//vaadin-text-field[@id='country']//input[1]").type(country1);
+    
+    await page.locator("//vaadin-button[@id='btnSave']").click();
+
+    await page.locator("//vaadin-text-field[@id='searchField-ALL']/input[1]").fill('');
+  
+    await page.locator("//vaadin-text-field[@id='searchField-ALL']/input[1]").type(district2);
+
+    await page.keyboard.press('Enter');
+
+    await page.locator("(//vaadin-menu-bar-item[@aria-selected='false'][normalize-space()='>'])[1]").click();
+
+    await page.locator("//vaadin-menu-bar-item[@role='menuitem']").click();
+
+    await page.locator("//vaadin-text-field[@id='district']//input[1]").fill('');
+    await page.locator("//vaadin-text-field[@id='state']//input[1]").fill('');
+    await page.locator("//vaadin-text-field[@id='country']//input[1]").fill('');
+  
+    await page.locator("//vaadin-text-field[@id='district']//input[1]").type("#"+district2);
+    await page.locator("//vaadin-text-field[@id='state']//input[1]").type("#"+state2);
+    await page.locator("//vaadin-text-field[@id='country']//input[1]").type(country2);
+    
+    await page.locator("//vaadin-button[@id='btnSave']").click();
+
+    await page.locator("//vaadin-button[@id='btnSaveAndSubmit']").click();
+    
+    return id;
+  }
+
+  async function retireLocations(page, district1,  district2) {
+    await page.locator("//vaadin-menu-bar-item[@id='new_S0.REF.DELETE.MAKER']").click()
+    const id = page.locator("//vaadin-text-field[@id='id']//input[1]").inputValue();
+
+    await page.locator("//vaadin-button[@id='btnShowSelect']").click();
+
+    await page.locator("(//vaadin-text-field[@id='searchField-'])[2]/input[1]").fill('');
+    await page.locator("(//vaadin-text-field[@id='searchField-'])[2]/input[1]").type("#"+district1);
+    await page.keyboard.press('Enter');
+    await page.locator("(//input[@value='on'])[2]").click();
+
+    await page.locator("(//vaadin-text-field[@id='searchField-'])[2]/input[1]").fill('');
+    await page.locator("(//vaadin-text-field[@id='searchField-'])[2]/input[1]").type("#"+district2);
+    await page.keyboard.press('Enter');
+    await page.locator("(//input[@value='on'])[2]").click();
+
+    await page.locator("//vaadin-button[@id='btnSelect']").click();
+
+    await page.locator("//vaadin-button[@id='btnSaveAndSubmit']").click();
+    
+    return id;
+  }
 
 async function doApproval(page, workItemId, approved, message){
   await openApplication(page);
