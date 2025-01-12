@@ -240,7 +240,7 @@ test('admin-happy-path', async ({ page }) => {
   var state2=  'DDD_'+seconds;
 
   // Load "http://localhost:18080/"
-  await page.goto('http://localhost:18080/');
+  await page.goto('http://localhost:18080/adminview');
 
   await login(page, User.yadmin, 'abc123');
 
